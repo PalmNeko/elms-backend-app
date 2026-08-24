@@ -23,6 +23,7 @@ import com.everrefine.elms.presentation.request.LessonCreateRequest;
 import com.everrefine.elms.presentation.request.LessonOrderUpdateRequest;
 import com.everrefine.elms.presentation.request.LessonSearchRequest;
 import com.everrefine.elms.presentation.request.LessonUpdateRequest;
+import com.everrefine.elms.presentation.request.TagRequest;
 import com.everrefine.elms.testsupport.TestDataFactory;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
