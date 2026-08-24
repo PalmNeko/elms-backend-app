@@ -13,4 +13,12 @@ public interface TagRepository {
    * @return タグのコレクション
    */
   TagCollection replaceLessonTags(UUID lessonId, TagCollection tags);
+
+  /**
+   * レッスンIDからレッスンのタグを取得する
+   *
+   * @param lessonId レッスンID
+   * @return タグ一覧
+   */
+  TagCollection findByLessonId(UUID lessonId);
 }

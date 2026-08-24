@@ -21,4 +21,13 @@ public interface TagDao extends CrudRepository<TagEntity, UUID> {
   void insertAllIfNotExists(@Param("names") String[] names);
 
   List<TagEntity> findByNameIn(List<String> names);
+
+  @Query(
+      """
+      SELECT t.id, t.name
+      FROM tags t
+      JOIN lesson_tags lt ON lt.tag_id = t.id
+      WHERE lt.lesson_id = :lessonId
+      """)
+  List<TagEntity> findByLessonId(@Param("lessonId") UUID lessonId);
 }

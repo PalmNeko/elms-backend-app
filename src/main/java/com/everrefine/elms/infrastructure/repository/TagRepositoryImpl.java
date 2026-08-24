@@ -38,4 +38,10 @@ public class TagRepositoryImpl implements TagRepository {
     return TagCollection.create(
         tagDao.findByNameIn(tagNames).stream().map(TagEntity::toDomain).toList());
   }
+
+  @Override
+  public TagCollection findByLessonId(UUID lessonId) {
+    return TagCollection.create(
+        tagDao.findByLessonId(lessonId).stream().map(TagEntity::toDomain).toList());
+  }
 }

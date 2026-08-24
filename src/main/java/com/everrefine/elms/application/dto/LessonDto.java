@@ -3,9 +3,12 @@ package com.everrefine.elms.application.dto;
 import com.everrefine.elms.domain.model.lesson.Lesson;
 import com.everrefine.elms.domain.model.lesson.LessonGroupWithLessons;
 import com.everrefine.elms.domain.model.lesson.LessonInGroup;
+import com.everrefine.elms.domain.model.tag.TagCollection;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /** レッスンのDTO。 */
@@ -17,6 +20,7 @@ public record LessonDto(
     @Schema(description = "レッスンタイトル", example = "変数とデータ型") String title,
     @Schema(description = "レッスン本文（Markdown対応）", example = "## 変数とは\n変数はデータを格納する箱です。")
         String content,
+    @JsonInclude(JsonInclude.Include.NON_NULL) @Schema(description = "タグ") List<TagDto> tags,
     @Schema(description = "動画URL", example = "https://example.com/videos/lesson1.mp4")
         String videoUrl,
     @Schema(description = "登録日時", example = "2024-01-01T09:00:00") LocalDateTime createdAt,
@@ -36,9 +40,22 @@ public record LessonDto(
         lesson.lessonOrder().value(),
         lesson.title().value(),
         lesson.content() != null ? lesson.content().value() : null,
+        null,
         lesson.videoUrl() != null ? lesson.videoUrl().value() : null,
         lesson.createdAt(),
         lesson.updatedAt());
+  }
+
+  /**
+   * LessonとタグからLessonDtoを生成する。
+   *
+   * @param lesson レッスン
+   * @param tags タグ
+   * @return レッスンDto
+   */
+  public static LessonDto from(Lesson lesson, TagCollection tags) {
+    return from(lesson)
+        .withTags(tags == null ? null : tags.values().stream().map(TagDto::from).toList());
   }
 
   /**
@@ -56,8 +73,23 @@ public record LessonDto(
         lesson.lessonOrder(),
         lesson.title(),
         lesson.content(),
+        null,
         lesson.videoUrl(),
         lesson.createdAt(),
         lesson.updatedAt());
+  }
+
+  private LessonDto withTags(List<TagDto> tags) {
+    return new LessonDto(
+        id,
+        lessonGroupId,
+        courseId,
+        lessonOrder,
+        title,
+        content,
+        tags,
+        videoUrl,
+        createdAt,
+        updatedAt);
   }
 }
