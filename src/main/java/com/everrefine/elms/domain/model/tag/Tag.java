@@ -14,6 +14,4 @@ public record Tag(UUID id, TagName name) {
   public static Tag create(String name) {
     return new Tag(null, new TagName(name));
   }
-
-
 }
