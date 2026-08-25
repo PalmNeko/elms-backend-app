@@ -24,7 +24,7 @@ public interface TagDao extends CrudRepository<TagEntity, UUID> {
 
   @Query(
       """
-      SELECT t.id, t.name
+      SELECT t.id, t.name, t.created_at, t.updated_at
       FROM tags t
       JOIN lesson_tags lt ON lt.tag_id = t.id
       WHERE lt.lesson_id = :lessonId

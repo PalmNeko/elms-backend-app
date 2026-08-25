@@ -1,6 +1,7 @@
 package com.everrefine.elms.domain.model.tag;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Nested;
@@ -16,6 +17,8 @@ class TagTest {
       Tag tag = Tag.create("Java");
       assertNull(tag.id());
       assertEquals("Java", tag.name().value());
+      assertNotNull(tag.createdAt());
+      assertNotNull(tag.updatedAt());
     }
   }
 }
