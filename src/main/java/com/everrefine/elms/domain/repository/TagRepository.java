@@ -6,10 +6,10 @@ import java.util.UUID;
 public interface TagRepository {
 
   /**
-   * レッスン
+   * レッスンIDとタグのコレクションから置き換える
    *
    * @param lessonId レッスンID
-   * @param tags タグID
+   * @param tags タグのコレクション
    * @return タグのコレクション
    */
   TagCollection replaceLessonTags(UUID lessonId, TagCollection tags);
