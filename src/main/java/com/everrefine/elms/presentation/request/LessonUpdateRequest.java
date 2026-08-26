@@ -20,7 +20,8 @@ public record LessonUpdateRequest(
     @Schema(description = "動画URL（2048文字以内）", example = "https://example.com/videos/lesson1.mp4")
         @Size(max = 2048, message = "動画URLは2048文字以内で入力してください")
         String videoUrl,
-    @Schema(description = "タグ一覧") @Valid List<TagRequest> tags) {
+    @Schema(description = "タグ一覧") @Size(max = 50, message = "タグは50個以内で入力してください") @Valid
+        List<TagRequest> tags) {
 
   /**
    * Commandオブジェクトに変換する。
