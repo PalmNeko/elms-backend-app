@@ -13,6 +13,7 @@ public record Tag(UUID id, TagName name, LocalDateTime createdAt, LocalDateTime 
    * @return 新規作成用のタグ
    */
   public static Tag create(String name) {
-    return new Tag(null, new TagName(name), LocalDateTime.now(), LocalDateTime.now());
+    LocalDateTime now = LocalDateTime.now();
+    return new Tag(null, new TagName(name), now, now);
   }
 }
