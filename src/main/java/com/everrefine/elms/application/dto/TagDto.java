@@ -6,7 +6,7 @@ import java.util.UUID;
 
 /** タグDTO */
 public record TagDto(
-    @Schema(description = "タグID", example = "1") UUID id,
+    @Schema(description = "タグID", example = "ad2cb47f-2ae3-4013-b1b1-e915067ca52f") UUID id,
     @Schema(description = "タグ名", example = "Java") String name) {
 
   /**
