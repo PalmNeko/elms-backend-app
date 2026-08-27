@@ -9,6 +9,7 @@ import com.everrefine.elms.infrastructure.entity.tag.TagEntity;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,13 +19,14 @@ public class TagRepositoryImpl implements TagRepository {
 
   private final TagDao tagDao;
   private final LessonTagDao lessonTagDao;
+  private final JdbcAggregateTemplate jdbcAggregateTemplate;
 
   @Override
   @Transactional
   public TagCollection replaceLessonTags(UUID lessonId, TagCollection tags) {
     TagCollection saved = saveAll(tags);
     lessonTagDao.deleteByLessonId(lessonId);
-    lessonTagDao.saveAll(
+    jdbcAggregateTemplate.insertAll(
         saved.values().stream().map(tag -> LessonTagEntity.from(lessonId, tag)).toList());
     return saved;
   }
