@@ -2,7 +2,6 @@ package com.everrefine.elms.domain.model.tag;
 
 import com.everrefine.elms.domain.exception.InvalidValueException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,12 +11,6 @@ public record TagCollection(Collection<Tag> values) {
 
   // 最大タグ数
   public static final int MAX_SIZE = 50;
-
-  private final Collection<Tag> tags;
-
-  private TagCollection(Collection<Tag> tags) {
-    this.tags = tags;
-  }
 
   /**
    * タグのコレクションを作成する。
