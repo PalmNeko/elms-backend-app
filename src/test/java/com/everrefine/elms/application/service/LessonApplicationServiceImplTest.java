@@ -23,6 +23,7 @@ import com.everrefine.elms.presentation.request.LessonCreateRequest;
 import com.everrefine.elms.presentation.request.LessonOrderUpdateRequest;
 import com.everrefine.elms.presentation.request.LessonSearchRequest;
 import com.everrefine.elms.presentation.request.LessonUpdateRequest;
+import com.everrefine.elms.presentation.request.TagRequest;
 import com.everrefine.elms.testsupport.TestDataFactory;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -82,6 +83,7 @@ public class LessonApplicationServiceImplTest {
 
   @Nested
   class レッスン取得 {
+
     @Test
     void レッスンをIDで取得できる() {
       // Arrange - テストデータを準備（IDは自動生成）
@@ -369,11 +371,11 @@ public class LessonApplicationServiceImplTest {
       List<Map<String, Object>> lessonGroups =
           jdbcTemplate.queryForList(
               """
-              SELECT id, title, lesson_group_order
-              FROM lesson_groups
-              WHERE course_id = ?
-              ORDER BY lesson_group_order ASC
-              """,
+                  SELECT id, title, lesson_group_order
+                  FROM lesson_groups
+                  WHERE course_id = ?
+                  ORDER BY lesson_group_order ASC
+                  """,
               courseId);
       assertEquals(2, lessonGroups.size());
       assertEquals("Basic", lessonGroups.get(0).get("title"));
@@ -486,7 +488,11 @@ public class LessonApplicationServiceImplTest {
               "https://example.com/old-video.mp4");
 
       LessonUpdateRequest request =
-          new LessonUpdateRequest("更新後タイトル", "更新後説明", "https://example.com/updated-video.mp4");
+          new LessonUpdateRequest(
+              "更新後タイトル",
+              "更新後説明",
+              "https://example.com/updated-video.mp4",
+              List.<TagRequest>of(new TagRequest(" 前後　空白　"), new TagRequest("2個目")));
       LessonUpdateCommand command = request.toCommand(lessonId);
 
       // Act
@@ -498,6 +504,11 @@ public class LessonApplicationServiceImplTest {
       assertEquals("更新後タイトル", result.title());
       assertEquals("更新後説明", result.content());
       assertEquals("https://example.com/updated-video.mp4", result.videoUrl());
+      assertNotNull(result.tags());
+      assertNotNull(result.tags().getFirst().id());
+      assertEquals("前後　空白", result.tags().getFirst().name());
+      assertNotNull(result.tags().get(1).id());
+      assertEquals("2個目", result.tags().get(1).name());
 
       // DBが更新されていることを確認
       String updatedTitle =
@@ -525,7 +536,7 @@ public class LessonApplicationServiceImplTest {
               "https://example.com/old-video.mp4");
 
       // nullを渡すと元の値が保持される仕様
-      LessonUpdateRequest request = new LessonUpdateRequest("タイトルのみ更新", null, null);
+      LessonUpdateRequest request = new LessonUpdateRequest("タイトルのみ更新", null, null, null);
       LessonUpdateCommand command = request.toCommand(lessonId);
 
       // Act
@@ -542,7 +553,7 @@ public class LessonApplicationServiceImplTest {
     void 存在しないレッスンを更新するとResourceNotFoundExceptionを投げる() {
       // Arrange
       LessonUpdateRequest request =
-          new LessonUpdateRequest("存在しないレッスン", "説明", "https://example.com/video.mp4");
+          new LessonUpdateRequest("存在しないレッスン", "説明", "https://example.com/video.mp4", null);
       UUID nonExistentId = UUID.randomUUID();
       LessonUpdateCommand command = request.toCommand(nonExistentId);
 

@@ -6,7 +6,12 @@ import com.everrefine.elms.application.command.LessonImportRowCommand;
 import com.everrefine.elms.application.command.LessonOrderUpdateCommand;
 import com.everrefine.elms.application.command.LessonSearchCommand;
 import com.everrefine.elms.application.command.LessonUpdateCommand;
-import com.everrefine.elms.application.dto.*;
+import com.everrefine.elms.application.dto.CourseLessonsDto;
+import com.everrefine.elms.application.dto.LessonDto;
+import com.everrefine.elms.application.dto.LessonGroupDto;
+import com.everrefine.elms.application.dto.LessonImportResponseDto;
+import com.everrefine.elms.application.dto.LessonPageDto;
+import com.everrefine.elms.application.dto.LessonWithCourseAndLessonGroupDto;
 import com.everrefine.elms.application.exception.BadRequestException;
 import com.everrefine.elms.application.exception.ResourceNotFoundException;
 import com.everrefine.elms.domain.model.course.Course;
@@ -14,9 +19,11 @@ import com.everrefine.elms.domain.model.lesson.Lesson;
 import com.everrefine.elms.domain.model.lesson.LessonGroup;
 import com.everrefine.elms.domain.model.lesson.LessonGroupWithLessons;
 import com.everrefine.elms.domain.model.lesson.LessonWithCourseAndLessonGroup;
+import com.everrefine.elms.domain.model.tag.TagCollection;
 import com.everrefine.elms.domain.repository.CourseRepository;
 import com.everrefine.elms.domain.repository.LessonGroupRepository;
 import com.everrefine.elms.domain.repository.LessonRepository;
+import com.everrefine.elms.domain.repository.TagRepository;
 import com.everrefine.elms.domain.service.LessonDomainService;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -45,6 +52,7 @@ public class LessonApplicationServiceImpl implements LessonApplicationService {
   private final LessonGroupRepository lessonGroupRepository;
   private final CourseRepository courseRepository;
   private final LessonDomainService lessonDomainService;
+  private final TagRepository tagRepository;
 
   /**
    * CSV出力用に値をエスケープする。
@@ -162,9 +170,15 @@ public class LessonApplicationServiceImpl implements LessonApplicationService {
   @Transactional
   public LessonDto updateLesson(LessonUpdateCommand lessonUpdateCommand) {
     Lesson currentLesson = findLessonOrThrow(lessonUpdateCommand.id());
+    TagCollection tags =
+        lessonUpdateCommand
+            .toTagCollection()
+            .map(
+                tagCollection -> tagRepository.replaceLessonTags(currentLesson.id(), tagCollection))
+            .orElseGet(() -> tagRepository.findByLessonId(currentLesson.id()));
     Lesson updatedLesson =
         lessonRepository.updateLesson(lessonUpdateCommand.toLesson(currentLesson));
-    return LessonDto.from(updatedLesson);
+    return LessonDto.from(updatedLesson, tags);
   }
 
   @Override
