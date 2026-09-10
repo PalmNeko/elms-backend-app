@@ -1,7 +1,9 @@
 package com.everrefine.elms.application.dto;
 
 import com.everrefine.elms.domain.model.tag.Tag;
+import com.everrefine.elms.domain.model.tag.TagCollection;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import java.util.UUID;
 
 /** タグDTO */
@@ -17,5 +19,15 @@ public record TagDto(
    */
   public static TagDto from(Tag tag) {
     return new TagDto(tag.id(), tag.name().value());
+  }
+
+  /**
+   * タグのコレクションからTagDtoのリストを生成する
+   *
+   * @param tags タグのコレクション
+   * @return TagDtoのリスト
+   */
+  public static List<TagDto> listFrom(TagCollection tags) {
+    return tags.values().stream().map(TagDto::from).toList();
   }
 }

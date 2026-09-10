@@ -15,6 +15,7 @@ import com.everrefine.elms.application.dto.CourseLessonsDto;
 import com.everrefine.elms.application.dto.LessonDto;
 import com.everrefine.elms.application.dto.LessonImportResponseDto;
 import com.everrefine.elms.application.dto.LessonPageDto;
+import com.everrefine.elms.application.dto.TagDto;
 import com.everrefine.elms.application.exception.BadRequestException;
 import com.everrefine.elms.application.exception.ResourceNotFoundException;
 import com.everrefine.elms.domain.model.lesson.Lesson;
@@ -112,6 +113,29 @@ public class LessonApplicationServiceImplTest {
       assertEquals("https://example.com/video.mp4", result.videoUrl());
       assertNotNull(result.createdAt());
       assertNotNull(result.updatedAt());
+      assertTrue(result.tags().isEmpty());
+    }
+
+    @Test
+    void レッスンに紐づくタグを取得できる() {
+      // Arrange - タグ付きのレッスンを準備
+      UUID courseId = testData.createCourse(new BigDecimal("1"), "タグコース", "コース説明");
+      UUID lessonGroupId = testData.createLessonGroup(courseId, new BigDecimal("1"), "タググループ");
+      UUID lessonId =
+          testData.createLesson(
+              lessonGroupId, courseId, new BigDecimal("1"), "タグ付きレッスン", "説明", null);
+      UUID tagId1 = testData.createTag("Java");
+      UUID tagId2 = testData.createTag("SQL");
+      testData.createLessonTag(lessonId, tagId1);
+      testData.createLessonTag(lessonId, tagId2);
+
+      // Act
+      LessonDto result = lessonApplicationService.findLessonById(courseId, lessonGroupId, lessonId);
+
+      // Assert
+      assertEquals(2, result.tags().size());
+      List<String> tagNames = result.tags().stream().map(TagDto::name).toList();
+      assertTrue(tagNames.containsAll(List.of("Java", "SQL")));
     }
 
     @Test
@@ -206,6 +230,34 @@ public class LessonApplicationServiceImplTest {
       // Assert
       assertNotNull(result);
       assertNotNull(result.lessonGroups());
+    }
+
+    @Test
+    void レッスンごとのタグも取得できる() {
+      // Arrange - タグ付きとタグなしのレッスンを準備
+      UUID courseId = testData.createCourse(new BigDecimal("1"), "タグ一覧コース", "コース説明");
+      UUID lessonGroupId = testData.createLessonGroup(courseId, new BigDecimal("1"), "タグ一覧グループ");
+      UUID taggedLessonId =
+          testData.createLesson(
+              lessonGroupId, courseId, new BigDecimal("1"), "タグ付きレッスン", "説明", null);
+      UUID untaggedLessonId =
+          testData.createLesson(
+              lessonGroupId, courseId, new BigDecimal("2"), "タグなしレッスン", "説明", null);
+      UUID tagId = testData.createTag("Java");
+      testData.createLessonTag(taggedLessonId, tagId);
+
+      // Act
+      CourseLessonsDto result = lessonApplicationService.findLessonsGroupedByLessonGroup(courseId);
+
+      // Assert
+      List<LessonDto> lessons = result.lessonGroups().getFirst().lessons();
+      assertEquals(2, lessons.size());
+      assertEquals(taggedLessonId, lessons.getFirst().id());
+      assertEquals(1, lessons.getFirst().tags().size());
+      assertEquals(tagId, lessons.getFirst().tags().getFirst().id());
+      assertEquals("Java", lessons.getFirst().tags().getFirst().name());
+      assertEquals(untaggedLessonId, lessons.get(1).id());
+      assertTrue(lessons.get(1).tags().isEmpty());
     }
   }
 

@@ -37,6 +37,15 @@ public record TagCollection(Collection<Tag> values) {
     return new TagCollection(tags);
   }
 
+  /**
+   * 空のタグのコレクションを作成する。
+   *
+   * @return 空のタグのコレクション
+   */
+  public static TagCollection empty() {
+    return new TagCollection(List.of());
+  }
+
   public List<String> nameValues() {
     return values.stream().map(tag -> tag.name().value()).toList();
   }

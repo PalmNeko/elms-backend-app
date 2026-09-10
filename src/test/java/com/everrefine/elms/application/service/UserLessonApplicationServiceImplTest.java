@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.everrefine.elms.application.command.UserLessonCompletionStatusUpdateCommand;
 import com.everrefine.elms.application.dto.UserLessonDetailDto;
+import com.everrefine.elms.application.dto.UserLessonDto;
 import com.everrefine.elms.application.dto.UserLessonGroupDto;
 import com.everrefine.elms.application.exception.ResourceNotFoundException;
 import com.everrefine.elms.domain.model.UserLesson;
@@ -72,6 +73,27 @@ public class UserLessonApplicationServiceImplTest {
       assertNotNull(result);
       assertEquals(lessonId, result.id());
       assertFalse(result.lessonCompleted());
+      assertTrue(result.tags().isEmpty());
+    }
+
+    @Test
+    void レッスンに紐づくタグを取得できる() {
+      UUID courseId = testData.createCourse(new BigDecimal("1"), "ULタグコース", "コース説明");
+      UUID lessonGroupId = testData.createLessonGroup(courseId, new BigDecimal("1"), "ULタググループ");
+      UUID lessonId =
+          testData.createLesson(
+              lessonGroupId, courseId, new BigDecimal("1"), "ULタグ付きレッスン", "説明", null);
+      UUID userId = testData.createUser("ul-tag@example.com", "p", "太郎", "ultag", "GENERAL");
+      UUID tagId = testData.createTag("Java");
+      testData.createLessonTag(lessonId, tagId);
+
+      UserLessonDetailDto result =
+          userLessonApplicationService.findUserLessonDetail(
+              userId, courseId, lessonGroupId, lessonId);
+
+      assertEquals(1, result.tags().size());
+      assertEquals(tagId, result.tags().getFirst().id());
+      assertEquals("Java", result.tags().getFirst().name());
     }
 
     @Test
@@ -374,6 +396,36 @@ public class UserLessonApplicationServiceImplTest {
       assertEquals(lessonGroupIdWithLesson, result.get(1).id());
       assertEquals(1, result.get(1).userLessons().size());
       assertEquals(lessonId, result.get(1).userLessons().getFirst().lesson().id());
+    }
+
+    @Test
+    void レッスンごとのタグも取得できる() {
+      // Arrange - タグ付きとタグなしのレッスンを準備
+      UUID courseId = testData.createCourse(new BigDecimal("1"), "ULタグ一覧コース", "説明");
+      UUID lessonGroupId = testData.createLessonGroup(courseId, new BigDecimal("1"), "ULタグ一覧グループ");
+      UUID taggedLessonId =
+          testData.createLesson(
+              lessonGroupId, courseId, new BigDecimal("1000"), "ULタグ付きレッスン", "本文", null);
+      UUID untaggedLessonId =
+          testData.createLesson(
+              lessonGroupId, courseId, new BigDecimal("2000"), "ULタグなしレッスン", "本文", null);
+      UUID userId =
+          testData.createUser("ul-tags@example.com", "password", "テスト 太郎", "ultags", "GENERAL");
+      UUID tagId = testData.createTag("Java");
+      testData.createLessonTag(taggedLessonId, tagId);
+
+      // Act
+      List<UserLessonGroupDto> result =
+          userLessonApplicationService.findUserLessons(userId, courseId);
+
+      // Assert
+      List<UserLessonDto> userLessons = result.getFirst().userLessons();
+      assertEquals(taggedLessonId, userLessons.getFirst().lesson().id());
+      assertEquals(1, userLessons.getFirst().lesson().tags().size());
+      assertEquals(tagId, userLessons.getFirst().lesson().tags().getFirst().id());
+      assertEquals("Java", userLessons.getFirst().lesson().tags().getFirst().name());
+      assertEquals(untaggedLessonId, userLessons.get(1).lesson().id());
+      assertTrue(userLessons.get(1).lesson().tags().isEmpty());
     }
 
     @Test
