@@ -54,7 +54,8 @@ public record LessonDto(
    * @return レッスンDto
    */
   public static LessonDto from(Lesson lesson, TagCollection tags) {
-    return from(lesson).withTags(tags == null ? null : TagDto.listFrom(tags));
+    return from(lesson)
+        .withTags(tags == null ? null : tags.values().stream().map(TagDto::from).toList());
   }
 
   /**
@@ -76,19 +77,6 @@ public record LessonDto(
         lesson.videoUrl(),
         lesson.createdAt(),
         lesson.updatedAt());
-  }
-
-  /**
-   * レッスングループと配下レッスンの読み取りモデルとタグからLessonDtoを生成する。
-   *
-   * @param group 所属するレッスングループの読み取りモデル
-   * @param lesson レッスングループ配下のレッスン読み取りモデル
-   * @param tags タグ
-   * @return レッスンDTO
-   */
-  public static LessonDto from(
-      LessonGroupWithLessons group, LessonInGroup lesson, TagCollection tags) {
-    return from(group, lesson).withTags(tags == null ? null : TagDto.listFrom(tags));
   }
 
   private LessonDto withTags(List<TagDto> tags) {

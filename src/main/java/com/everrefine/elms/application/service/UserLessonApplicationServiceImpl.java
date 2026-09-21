@@ -9,16 +9,13 @@ import com.everrefine.elms.domain.model.course.Course;
 import com.everrefine.elms.domain.model.lesson.Lesson;
 import com.everrefine.elms.domain.model.lesson.LessonGroupWithLessons;
 import com.everrefine.elms.domain.model.lesson.LessonInGroup;
-import com.everrefine.elms.domain.model.tag.TagCollection;
 import com.everrefine.elms.domain.model.user.User;
 import com.everrefine.elms.domain.repository.CourseRepository;
 import com.everrefine.elms.domain.repository.LessonRepository;
-import com.everrefine.elms.domain.repository.TagRepository;
 import com.everrefine.elms.domain.repository.UserLessonRepository;
 import com.everrefine.elms.domain.repository.UserRepository;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,7 +32,6 @@ public class UserLessonApplicationServiceImpl implements UserLessonApplicationSe
   private final UserRepository userRepository;
   private final UserLessonRepository userLessonRepository;
   private final CourseRepository courseRepository;
-  private final TagRepository tagRepository;
 
   @Override
   @Transactional(readOnly = true)
@@ -45,8 +41,7 @@ public class UserLessonApplicationServiceImpl implements UserLessonApplicationSe
         findLessonBelongingToCourseAndLessonGroupOrThrow(lessonId, courseId, lessonGroupId);
     boolean isLessonCompleted =
         userLessonRepository.findByUserIdAndLessonId(userId, lessonId).isPresent();
-    TagCollection tags = tagRepository.findByLessonId(lessonId);
-    return UserLessonDetailDto.from(lesson, isLessonCompleted, tags);
+    return UserLessonDetailDto.from(lesson, isLessonCompleted);
   }
 
   @Override
@@ -141,10 +136,8 @@ public class UserLessonApplicationServiceImpl implements UserLessonApplicationSe
             ? Collections.emptySet()
             : userLessonRepository.findLessonIdByUserIdAndLessonIdIn(userId, lessonIds);
 
-    Map<UUID, TagCollection> tagsByLessonId = tagRepository.findByLessonIdIn(lessonIds);
-
     return lessonGroups.stream()
-        .map(group -> UserLessonGroupDto.from(group, completedLessonIds, tagsByLessonId))
+        .map(group -> UserLessonGroupDto.from(group, completedLessonIds))
         .toList();
   }
 }

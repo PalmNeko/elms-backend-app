@@ -6,12 +6,8 @@ import com.everrefine.elms.infrastructure.dao.LessonTagDao;
 import com.everrefine.elms.infrastructure.dao.TagDao;
 import com.everrefine.elms.infrastructure.entity.tag.LessonTagEntity;
 import com.everrefine.elms.infrastructure.entity.tag.TagEntity;
-import com.everrefine.elms.infrastructure.row.TagWithLessonIdRow;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.stereotype.Repository;
@@ -37,7 +33,7 @@ public class TagRepositoryImpl implements TagRepository {
 
   private TagCollection saveAll(TagCollection tags) {
     if (tags.values().isEmpty()) {
-      return TagCollection.empty();
+      return TagCollection.create(List.of());
     }
     List<String> tagNames = tags.nameValues();
     tagDao.insertAllIfNotExists(tagNames.toArray(String[]::new));
@@ -49,19 +45,5 @@ public class TagRepositoryImpl implements TagRepository {
   public TagCollection findByLessonId(UUID lessonId) {
     return TagCollection.create(
         tagDao.findByLessonId(lessonId).stream().map(TagEntity::toDomain).toList());
-  }
-
-  @Override
-  public Map<UUID, TagCollection> findByLessonIdIn(Collection<UUID> lessonIds) {
-    if (lessonIds.isEmpty()) {
-      return Map.of();
-    }
-    return tagDao.findByLessonIdIn(lessonIds).stream()
-        .collect(
-            Collectors.groupingBy(
-                TagWithLessonIdRow::lessonId,
-                Collectors.collectingAndThen(
-                    Collectors.mapping(TagWithLessonIdRow::toTag, Collectors.toList()),
-                    TagCollection::create)));
   }
 }
